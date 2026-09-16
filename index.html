@@ -28,6 +28,9 @@
         <button id="loadPresetBtn" class="btn btn-secondary">
           <span>⚡ Load Problem Scenario</span>
         </button>
+        <button id="openMessyModalBtn" class="btn btn-amber">
+          <span>🧹 Clean Messy Data</span>
+        </button>
         <button id="broadcastBtn" class="btn btn-primary">
           <span>📢 WhatsApp / Slack Update</span>
         </button>
@@ -263,12 +266,82 @@
       </div>
     </div>
 
+    <!-- Modal: Clean & Import Messy Data (The Twist) -->
+    <div class="modal-backdrop" id="messyModal">
+      <div class="modal-box messy-modal-box">
+        <div class="modal-header">
+          <div>
+            <h3>🧹 Import &amp; Reconcile Messy Contributions</h3>
+            <p class="card-desc">Cleans inconsistent amounts, merges duplicate names, strips bad rows &amp; generates audit report</p>
+          </div>
+          <button class="close-btn" id="closeMessyModal">&times;</button>
+        </div>
+
+        <div class="messy-modal-body">
+          <div class="messy-input-actions">
+            <span class="form-hint">Paste raw lines, CSV, or WhatsApp text dump:</span>
+            <button type="button" id="loadSampleMessyBtn" class="btn btn-xs btn-outline">⚡ Load Sample Messy Dump</button>
+          </div>
+          <textarea id="messyInputText" rows="6" placeholder="Alice, ₹1,000, Paid full&#10;alice, 1000, Paid full&#10;Bob: Rs. 500/- (partial)&#10;BOB, 500&#10;Charlie, 1k&#10;Dave, -500, invalid&#10;Eve, pending"></textarea>
+
+          <div class="messy-run-actions">
+            <button type="button" id="runReconcileBtn" class="btn btn-primary btn-sm">🚀 Clean &amp; Generate Audit Report</button>
+          </div>
+
+          <!-- Audit Report Section -->
+          <div id="auditReportContainer" class="audit-report-container" style="display: none;">
+            <div class="audit-badges-grid">
+              <div class="audit-badge badge-imp">
+                <span class="audit-count" id="auditImportedCount">0</span>
+                <span class="audit-label">Clean Imported</span>
+              </div>
+              <div class="audit-badge badge-dedup">
+                <span class="audit-count" id="auditDedupCount">0</span>
+                <span class="audit-label">De-duplicated</span>
+              </div>
+              <div class="audit-badge badge-merge">
+                <span class="audit-count" id="auditMergedCount">0</span>
+                <span class="audit-label">Names Merged</span>
+              </div>
+              <div class="audit-badge badge-rej">
+                <span class="audit-count" id="auditRejCount">0</span>
+                <span class="audit-label">Rejected Rows</span>
+              </div>
+            </div>
+
+            <!-- Detailed Audit Breakdown Tabs / Accordions -->
+            <div class="audit-details-tabs">
+              <div class="audit-detail-section">
+                <h5 class="text-rose">❌ Rejected Rows (Invalid Data Ignored)</h5>
+                <ul id="auditRejectedList" class="audit-list"></ul>
+              </div>
+              <div class="audit-detail-section">
+                <h5 class="text-indigo">🔄 Names Merged (Fuzzy / Casing Matches)</h5>
+                <ul id="auditMergedList" class="audit-list"></ul>
+              </div>
+              <div class="audit-detail-section">
+                <h5 class="text-amber">⚠️ De-duplicated Entries (Redundant Transactions)</h5>
+                <ul id="auditDedupList" class="audit-list"></ul>
+              </div>
+            </div>
+
+            <div class="audit-apply-footer">
+              <button type="button" id="applyCleanedDataBtn" class="btn btn-emerald">
+                ✅ Apply Cleaned Data to Pool &amp; Settle
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="toast">Action completed successfully</div>
 
   </div>
 
   <script src="src/settlement.js"></script>
+  <script src="src/dataCleaner.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -124,5 +124,53 @@ The prompt specifically highlights: *"one generous soul paid extra to cover a fr
 
 ---
 
-## 5. Conclusion
-FairShare transforms an everyday interpersonal headache into a clear, satisfying, and mathematically optimal experience. By focusing on the exact questions organizers face and providing a minimal-transaction settlement output, it eliminates social awkwardness and administrative chaos.
+## 5. The Twist: Messy Contribution Ingestion & Audit Trail
+
+### 5.1 The Real-World Data Hygiene Challenge
+In human group pools, data does not arrive as pristine JSON. It arrives as copy-pasted WhatsApp messages, handwritten scribbles, or rushed CSV exports with:
+1. **Duplicate Entries**: The same person logging a payment twice after network lag or miscommunication.
+2. **Inconsistent Name Spellings**: "Alice", "alice", "Alice S.", "Bob", "BOB", "dAvE".
+3. **Chaotic Amount Formats**: "₹1,000", "1k", "1.5k", "Rs. 500/-", "INR 500", " 1000 ".
+4. **Corrupt / Invalid Rows**: Negative numbers, "pending", missing names, or blank amounts.
+
+### 5.2 The 4-Stage Reconciliation Pipeline (`src/dataCleaner.js`)
+We designed an intelligent data pipeline with four distinct stages:
+
+```
+[Raw Messy Text / CSV]
+         │
+         ▼
+[Stage 1: Line Normalization & Amount Extraction]
+  - Pre-clean internal commas in numbers (e.g. ₹1,000 -> ₹1000)
+  - Regex parser removes currency symbols (₹, Rs., INR, /-) and scales multipliers ('k' -> 1000)
+  - Discard non-numeric / negative amounts with explicit rejection reasons
+         │
+         ▼
+[Stage 2: Fuzzy Name Normalization & Merging]
+  - Whitespace trimming & Title-casing ("aLIcE" -> "Alice")
+  - Levenshtein edit-distance metric (threshold <= 2) and token prefix matching
+  - Maps spelling variants into canonical participant identities
+         │
+         ▼
+[Stage 3: Hash-Signature De-duplication]
+  - Generates composite signature: (CanonicalName + Amount + Note)
+  - Detects duplicate submissions and isolates redundant rows
+         │
+         ▼
+[Stage 4: Audit Reporting & Pool Injection]
+  - Produces structured 4-quadrant report:
+    * Imported (clean entries)
+    * De-duplicated (redundant transactions skipped)
+    * Merged (spelling variants unified)
+    * Rejected (bad data with line number & root cause)
+  - Injects clean transactions into SettlementEngine to compute correct balances
+```
+
+### 5.3 Algorithmic Transparency & Accountability
+Rather than silently swallowing bad rows, the engine generates an interactive **Audit Report Modal** with exact line numbers, original text, and transparent rejection reasons. This guarantees the organiser has full auditability when presenting numbers to the team.
+
+---
+
+## 6. Conclusion
+FairShare transforms an everyday interpersonal headache into a clear, satisfying, and mathematically optimal experience. By focusing on the exact questions organizers face, handling real-world messy data with a transparent audit trail, and providing a minimal-transaction settlement output, it eliminates social awkwardness and administrative chaos.
+

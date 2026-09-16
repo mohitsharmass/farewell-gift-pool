@@ -32,8 +32,9 @@ At the end, the organiser wants the **simplest list of who should pay whom** so 
 | **"How much do I still owe?"** | **Individual Financial Cards & Smart Filters**: Real-time breakdown per person showing Fair Share (₹1,000), Amount Paid, Net Balance, and clear color-coded badges (`Owes ₹1,000`, `Owes ₹500`, `All Cleared`, `Overpaid by ₹1,000`). Filter tabs for *Unpaid*, *Partial*, and *Cleared*. |
 | **"One generous soul paid extra to cover a friend"** | **Beneficiary / Cover Friend Tracking**: Payments explicitly support marking when one person covers another (e.g., Alice paying ₹2,000 covering herself and friend Bob). Credits are attributed properly and reflected in net balances. |
 | **"Simplest list of who should pay whom"** | **Greedy Minimum Cash Flow Algorithm**: Solves the N-person debt simplification problem. Computes the minimal number of peer-to-peer transfers (at most $N - 1$) so members don't pass money in circles. Direct 1-click *"Settle Up"* button records transactions. |
+| **🌪️ The Twist: Messy Contribution Ingestion** | **Intelligent DataCleaner Engine & Audit Report**: Parses noisy contribution dumps (CSV, raw text, chat dumps). Handles inconsistent amounts (`₹1,000`, `1k`, `Rs. 500/-`, `INR 500`), merges fuzzy names (`alice` / `BOB` into canonical identities), removes duplicates, discards invalid rows, and provides a full audit report detailing what was **Imported**, **De-duplicated**, **Merged**, and **Rejected**. |
 | **Organiser Chaos & Communication** | **1-Click WhatsApp / Slack Broadcast**: Automatically formats a complete status update with pool summary, individual balances, and settlement instructions ready to paste into group chats. |
-| **Instant Assessment Testing** | **"Load Problem Scenario" Button**: 1-click pre-loads the exact scenario from the problem statement (Alice covering Bob, Charlie paid full, Dave paid partial, Eve & Frank unpaid). |
+| **Instant Assessment Testing** | **"Load Problem Scenario" & "Load Sample Messy Dump"**: 1-click buttons to pre-load the exact farewell gift scenario and noisy contribution log for immediate assessment evaluation. |
 
 ---
 

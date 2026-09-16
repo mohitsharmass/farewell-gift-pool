@@ -104,6 +104,24 @@ class App {
     this.memberForm = document.getElementById('memberForm');
     this.memberNameInput = document.getElementById('memberNameInput');
     this.broadcastText = document.getElementById('broadcastText');
+
+    // Messy Data Importer (The Twist)
+    this.messyModal = document.getElementById('messyModal');
+    this.openMessyModalBtn = document.getElementById('openMessyModalBtn');
+    this.closeMessyModal = document.getElementById('closeMessyModal');
+    this.loadSampleMessyBtn = document.getElementById('loadSampleMessyBtn');
+    this.messyInputText = document.getElementById('messyInputText');
+    this.runReconcileBtn = document.getElementById('runReconcileBtn');
+    this.auditReportContainer = document.getElementById('auditReportContainer');
+    this.auditImportedCount = document.getElementById('auditImportedCount');
+    this.auditDedupCount = document.getElementById('auditDedupCount');
+    this.auditMergedCount = document.getElementById('auditMergedCount');
+    this.auditRejCount = document.getElementById('auditRejCount');
+    this.auditRejectedList = document.getElementById('auditRejectedList');
+    this.auditMergedList = document.getElementById('auditMergedList');
+    this.auditDedupList = document.getElementById('auditDedupList');
+    this.applyCleanedDataBtn = document.getElementById('applyCleanedDataBtn');
+    this.lastReconciledResult = null;
   }
 
   bindEvents() {
@@ -166,11 +184,119 @@ class App {
     document.getElementById('copySettlementBtn').addEventListener('click', () => this.copySettlementPlan());
     document.getElementById('copyBroadcastBtn').addEventListener('click', () => this.copyBroadcast());
 
+    // Messy Data Reconciler (The Twist)
+    this.openMessyModalBtn.addEventListener('click', () => this.openMessyModal());
+    this.closeMessyModal.addEventListener('click', () => this.closeMessyModalDialog());
+    this.loadSampleMessyBtn.addEventListener('click', () => this.loadSampleMessy());
+    this.runReconcileBtn.addEventListener('click', () => this.runReconciliation());
+    this.applyCleanedDataBtn.addEventListener('click', () => this.applyCleanedData());
+
     // Export & Import
     document.getElementById('exportDataBtn').addEventListener('click', () => this.exportData());
     document.getElementById('importDataBtn').addEventListener('click', () => document.getElementById('importFileInput').click());
     document.getElementById('importFileInput').addEventListener('change', (e) => this.importData(e));
     document.getElementById('resetPoolBtn').addEventListener('click', () => this.resetPool());
+  }
+
+  openMessyModal() {
+    this.messyModal.classList.add('active');
+  }
+
+  closeMessyModalDialog() {
+    this.messyModal.classList.remove('active');
+  }
+
+  loadSampleMessy() {
+    this.messyInputText.value = [
+      '# Messy Office Farewell Contribution Log',
+      'Alice, ₹1,000, Paid full via UPI',
+      'alice, 1000, Paid full via UPI',
+      'Alice S., 1k, Extra contribution',
+      'Bob: Rs. 500/- (partial)',
+      'BOB, 500, Part payment',
+      'Charlie, ₹1,000, Full share',
+      'Dave, -500, Refund',
+      'Eve, pending, Will pay tomorrow',
+      ', 500, Missing name',
+      'Corrupt row without amount',
+      'Frank, 1000, Paid cash'
+    ].join('\n');
+    this.showToast('Sample messy contribution log loaded!');
+  }
+
+  runReconciliation() {
+    const raw = this.messyInputText.value.trim();
+    if (!raw) {
+      alert('Please paste or load messy contribution data first.');
+      return;
+    }
+
+    // Call DataCleaner engine
+    const result = DataCleaner.cleanAndReconcile(raw, this.state.participants);
+    this.lastReconciledResult = result;
+    const { report } = result;
+
+    // Display counts
+    this.auditImportedCount.innerText = report.importedCount;
+    this.auditDedupCount.innerText = report.deduplicatedCount;
+    this.auditMergedCount.innerText = report.mergedCount;
+    this.auditRejCount.innerText = report.rejectedCount;
+
+    // Populate Rejected List
+    this.auditRejectedList.innerHTML = '';
+    if (report.rejected.length === 0) {
+      this.auditRejectedList.innerHTML = '<li>None — all rows had valid names &amp; amounts!</li>';
+    } else {
+      report.rejected.forEach(r => {
+        const li = document.createElement('li');
+        li.innerHTML = `Row ${r.row}: <strong>"${r.raw}"</strong> &mdash; <span class="text-rose">${r.reason}</span>`;
+        this.auditRejectedList.appendChild(li);
+      });
+    }
+
+    // Populate Merged List
+    this.auditMergedList.innerHTML = '';
+    if (report.merged.length === 0) {
+      this.auditMergedList.innerHTML = '<li>None — all names were uniquely distinct!</li>';
+    } else {
+      report.merged.forEach(m => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>"${m.original}"</strong> &rarr; Merged into <strong>${m.mergedInto}</strong> (${m.reason})`;
+        this.auditMergedList.appendChild(li);
+      });
+    }
+
+    // Populate De-duplicated List
+    this.auditDedupList.innerHTML = '';
+    if (report.deduplicated.length === 0) {
+      this.auditDedupList.innerHTML = '<li>None — no redundant identical payments detected!</li>';
+    } else {
+      report.deduplicated.forEach(d => {
+        const li = document.createElement('li');
+        li.innerHTML = `Row ${d.row}: <strong>${d.person}</strong> (₹${d.amount}) &mdash; <span class="text-amber">${d.reason}</span>`;
+        this.auditDedupList.appendChild(li);
+      });
+    }
+
+    this.auditReportContainer.style.display = 'block';
+    this.showToast('Reconciliation complete! Review audit report below.');
+  }
+
+  applyCleanedData() {
+    if (!this.lastReconciledResult) {
+      alert('Please run the reconciliation first.');
+      return;
+    }
+
+    const { cleanedPayments, participants } = this.lastReconciledResult;
+
+    // Update pool participants and append cleaned payments
+    this.state.participants = participants;
+    this.state.payments = cleanedPayments;
+    this.saveState();
+
+    this.closeMessyModalDialog();
+    this.showToast(`✅ Loaded ${cleanedPayments.length} clean contributions into pool!`);
   }
 
   toggleTheme() {
