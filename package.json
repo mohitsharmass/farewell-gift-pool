@@ -1,0 +1,19 @@
+{
+  "name": "fairshare-gift-pool-tracker",
+  "version": "1.0.0",
+  "description": "FairShare - Farewell Gift Pool Tracker and Minimum Cash Flow Debt Simplification Engine for Auriga IT Builder Assessment",
+  "main": "src/settlement.js",
+  "scripts": {
+    "test": "node --test test/settlement.test.js",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "gift-pool",
+    "settlement",
+    "splitwise",
+    "debt-simplification",
+    "farewell-gift"
+  ],
+  "author": "Auriga IT Candidate",
+  "license": "MIT"
+}

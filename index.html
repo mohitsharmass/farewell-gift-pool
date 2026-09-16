@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FairShare — Farewell Gift Pool & Settlement Tracker</title>
+  <meta name="description" content="Track group gift pools, monitor fair shares, eliminate chaos with 'how much do I owe?' answers, and compute the simplest list of who pays whom.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-dark">
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="logo-icon">🎁</div>
+        <div>
+          <h1 class="app-title">FairShare <span class="badge-tag">Pool Tracker</span></h1>
+          <p class="app-subtitle">Farewell Gift Organizer &amp; Minimum Debt Settlement Engine</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="themeToggleBtn" class="btn btn-outline icon-btn" title="Toggle Dark/Light Mode">
+          <span id="themeIcon">☀️</span>
+        </button>
+        <button id="loadPresetBtn" class="btn btn-secondary">
+          <span>⚡ Load Problem Scenario</span>
+        </button>
+        <button id="broadcastBtn" class="btn btn-primary">
+          <span>📢 WhatsApp / Slack Update</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Grid Layout -->
+    <main class="dashboard-grid">
+      
+      <!-- Top Overview Card: "Have we collected enough yet?" -->
+      <section class="card pool-hero-card" id="poolStatusSection">
+        <div class="hero-top">
+          <div class="pool-meta">
+            <span class="pool-badge" id="poolStatusBadge">Checking Pool...</span>
+            <h2 id="poolTitleDisplay" class="pool-title" contenteditable="true" title="Click to edit pool title">Manager's Farewell Gift</h2>
+            <p class="pool-date" id="poolLastUpdated">Last updated: Just now</p>
+          </div>
+          <div class="budget-control">
+            <label for="targetBudgetInput">Target Budget</label>
+            <div class="input-with-symbol">
+              <span class="currency-symbol">₹</span>
+              <input type="number" id="targetBudgetInput" value="6000" min="0" step="50">
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Tracker -->
+        <div class="progress-container">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progressBarFill" style="width: 0%"></div>
+          </div>
+          <div class="progress-stats">
+            <div>
+              <span class="stat-label">Collected so far</span>
+              <p class="stat-value text-emerald" id="totalCollectedVal">₹0</p>
+            </div>
+            <div class="text-center">
+              <span class="stat-label">Pool Status</span>
+              <p class="stat-value" id="statusMessageVal">₹6,000 needed</p>
+            </div>
+            <div class="text-right">
+              <span class="stat-label">Fair Share / Person</span>
+              <p class="stat-value text-indigo" id="fairShareVal">₹0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Clue Banners -->
+        <div class="clue-banner-grid">
+          <div class="clue-banner" id="bannerCollectedStatus">
+            <div class="clue-icon" id="bannerIcon">❓</div>
+            <div class="clue-content">
+              <h4>Have we collected enough yet?</h4>
+              <p id="bannerCollectedText">Loading collection status...</p>
+            </div>
+          </div>
+          <div class="clue-banner info-banner">
+            <div class="clue-icon">💡</div>
+            <div class="clue-content">
+              <h4>Chipping in made painless</h4>
+              <p id="bannerPeopleText">6 members participating. Everyone pays equal share.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Two Column Layout: Left (Members & Payments), Right (Settlement & Plan) -->
+      <div class="two-col-layout">
+        
+        <!-- Left Column: Individual Shares ("How much do I still owe?") -->
+        <section class="card members-card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">👥 Team Members &amp; Shares</h3>
+              <p class="card-desc">Answers: <em>"How much do I still owe?"</em></p>
+            </div>
+            <div class="card-header-actions">
+              <div class="filter-pills">
+                <button class="pill-btn active" data-filter="all">All (<span id="countAll">0</span>)</button>
+                <button class="pill-btn" data-filter="unpaid">Unpaid (<span id="countUnpaid">0</span>)</button>
+                <button class="pill-btn" data-filter="partial">Partial (<span id="countPartial">0</span>)</button>
+                <button class="pill-btn" data-filter="cleared">Cleared (<span id="countCleared">0</span>)</button>
+              </div>
+              <button id="addMemberBtn" class="btn btn-sm btn-outline">+ Add Member</button>
+            </div>
+          </div>
+
+          <!-- Members List Grid -->
+          <div class="member-list" id="memberList">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+
+        <!-- Right Column: Simplest Settlement ("Who should pay whom") -->
+        <section class="card settlement-card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">🤝 Simplest Settlement Plan</h3>
+              <p class="card-desc">Greedy minimum cash-flow: shortest path to fair shares</p>
+            </div>
+            <button id="recordPaymentBtn" class="btn btn-sm btn-primary">+ Record Payment</button>
+          </div>
+
+          <div class="settlement-container">
+            <div class="settlement-badge-header">
+              <span id="settlementCountBadge" class="settlement-count-badge">0 Transfers Needed</span>
+              <button id="copySettlementBtn" class="btn btn-xs btn-outline">📋 Copy Plan</button>
+            </div>
+
+            <div id="settlementList" class="settlement-list">
+              <!-- Rendered dynamically -->
+            </div>
+
+            <!-- Settlement Note -->
+            <div class="settlement-note">
+              <span class="note-icon">ℹ️</span>
+              <p>This algorithm minimizes transactions so team members don't pass money in circles. Instead of multiple small transfers, debts are netted out directly.</p>
+            </div>
+          </div>
+
+          <!-- Transaction History / Activity Feed -->
+          <div class="activity-section">
+            <div class="activity-header">
+              <h4>📜 Contribution History</h4>
+              <span class="badge-subtle" id="txCountBadge">0 payments</span>
+            </div>
+            <div class="transaction-list" id="transactionList">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Action Footer -->
+      <footer class="app-footer">
+        <div class="footer-left">
+          <span>FairShare Settlement Engine &bull; Auriga IT Builder Assessment</span>
+        </div>
+        <div class="footer-actions">
+          <button id="exportDataBtn" class="btn btn-xs btn-outline">💾 Export JSON</button>
+          <button id="importDataBtn" class="btn btn-xs btn-outline">📂 Import</button>
+          <input type="file" id="importFileInput" accept=".json" style="display: none;">
+          <button id="resetPoolBtn" class="btn btn-xs btn-danger">🔄 Reset Pool</button>
+        </div>
+      </footer>
+
+    </main>
+
+    <!-- Modal: Record Payment -->
+    <div class="modal-backdrop" id="paymentModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>Record Contribution / Payment</h3>
+          <button class="close-btn" id="closePaymentModal">&times;</button>
+        </div>
+        <form id="paymentForm">
+          <div class="form-group">
+            <label for="payerSelect">Who is paying? *</label>
+            <select id="payerSelect" required>
+              <!-- Options populated dynamically -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="paymentAmount">Amount (₹) *</label>
+            <input type="number" id="paymentAmount" required min="1" step="any" placeholder="e.g. 1000">
+          </div>
+
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="coverFriendCheckbox">
+              <span>🌟 Paying extra on behalf of a friend?</span>
+            </label>
+          </div>
+
+          <div class="form-group" id="beneficiaryGroup" style="display: none;">
+            <label for="beneficiarySelect">Which friend are they covering?</label>
+            <select id="beneficiarySelect">
+              <!-- Options populated dynamically -->
+            </select>
+            <small class="form-hint">E.g., one generous soul covering their friend's fair share.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="paymentNote">Note / Reference (Optional)</label>
+            <input type="text" id="paymentNote" placeholder="e.g. Paid full share via UPI, cash, etc.">
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="cancelPaymentBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Payment</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Add / Edit Member -->
+    <div class="modal-backdrop" id="memberModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3>Add Team Member</h3>
+          <button class="close-btn" id="closeMemberModal">&times;</button>
+        </div>
+        <form id="memberForm">
+          <div class="form-group">
+            <label for="memberNameInput">Member Name *</label>
+            <input type="text" id="memberNameInput" required placeholder="e.g. Sarah Connor">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="cancelMemberBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary">Add Member</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: WhatsApp / Slack Broadcast -->
+    <div class="modal-backdrop" id="broadcastModal">
+      <div class="modal-box broadcast-modal-box">
+        <div class="modal-header">
+          <h3>📢 Team Broadcast Message</h3>
+          <button class="close-btn" id="closeBroadcastModal">&times;</button>
+        </div>
+        <div class="broadcast-body">
+          <p class="form-hint">Ready to copy and paste directly into WhatsApp or Slack:</p>
+          <textarea id="broadcastText" readonly rows="12"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="closeBroadcastBtn">Close</button>
+          <button type="button" class="btn btn-primary" id="copyBroadcastBtn">📋 Copy to Clipboard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">Action completed successfully</div>
+
+  </div>
+
+  <script src="src/settlement.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
